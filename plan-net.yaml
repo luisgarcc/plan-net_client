@@ -1,0 +1,83 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: plan-net
+  labels:
+    app: plan-net  
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: plan-net
+  template:
+    metadata:
+      name: plan-net
+      labels:
+        app: plan-net
+    spec:
+      containers:      
+      - image: luisgarc/plan-net:demo
+        name: plan-net
+#        imagePullPolicy: Always
+        ports:
+        - name: http
+          containerPort: 3000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: plan-net-service
+  labels:
+    app: plan-net
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 3000
+    targetPort: 3000
+    name: plan-net
+    protocol: TCP
+  selector:
+    app: plan-net
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+  labels:
+    app: postgres  
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      name: postgres
+      labels:
+        app: postgres
+    spec:
+      containers:      
+      - image: postgres
+        name: postgres
+        ports:
+        - name: db
+          containerPort: 5432
+        env:
+        - name: POSTGRES_PASSWORD
+          value: passw0rd
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  labels:
+    app: postgres
+spec:
+  type: ClusterIP
+  ports:
+  - port: 5432
+    targetPort: 5432
+    name: db
+    protocol: TCP
+  selector:
+    app: postgres
